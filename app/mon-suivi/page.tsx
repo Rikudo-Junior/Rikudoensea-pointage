@@ -61,6 +61,7 @@ export default async function MonSuiviPage() {
   const pointages = await getPointagesForUser(session.userId);
   const today = schoolDateString(now());
   const stats = computeInternStats(pointages, today);
+  const todayRecord = pointages.find((p) => p.date === today) ?? null;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-10">
@@ -74,7 +75,7 @@ export default async function MonSuiviPage() {
 
       <EnseaInfoStrip />
 
-      <PointerAction />
+      <PointerAction initialArrivee={todayRecord?.heureArrivee ?? null} initialDepart={todayRecord?.heureDepart ?? null} />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <Kpi label="Jours travaillés" value={stats.joursTravailles} icon={CalendarCheck2} />

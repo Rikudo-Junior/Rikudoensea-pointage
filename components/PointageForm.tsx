@@ -10,8 +10,9 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 import { AuthShell } from "@/components/AuthShell";
 import { RoleTabs } from "@/components/RoleTabs";
 import { CLASSES, type Classe } from "@/lib/classes";
+import { UserPlus, LogIn } from "lucide-react";
 
-type Step = "loading" | "register" | "verify" | "login";
+type Step = "loading" | "choice" | "register" | "verify" | "login";
 
 export function PointageForm() {
   const router = useRouter();
@@ -34,10 +35,10 @@ export function PointageForm() {
         if (data.loggedIn) {
           router.replace("/mon-suivi");
         } else {
-          setStep("register");
+          setStep("choice");
         }
       })
-      .catch(() => setStep("register"));
+      .catch(() => setStep("choice"));
   }, [router]);
 
   async function handleRegister(e: React.FormEvent) {
@@ -137,6 +138,40 @@ export function PointageForm() {
         {step === "loading" && (
           <Card className="w-full">
             <CardContent className="py-10 text-center text-muted-foreground">Chargement…</CardContent>
+          </Card>
+        )}
+
+        {step === "choice" && (
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Bienvenue</CardTitle>
+              <CardDescription>Première visite ou déjà inscrit ? Choisissez une option.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <Button
+                size="lg"
+                className="h-14 w-full cursor-pointer justify-start gap-3 text-base font-semibold"
+                onClick={() => {
+                  setError(null);
+                  setStep("register");
+                }}
+              >
+                <UserPlus className="h-5 w-5" />
+                S&apos;inscrire
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-14 w-full cursor-pointer justify-start gap-3 text-base font-semibold"
+                onClick={() => {
+                  setError(null);
+                  setStep("login");
+                }}
+              >
+                <LogIn className="h-5 w-5" />
+                Se connecter
+              </Button>
+            </CardContent>
           </Card>
         )}
 

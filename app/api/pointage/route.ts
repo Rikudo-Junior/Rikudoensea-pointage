@@ -53,6 +53,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: classification.reason }, { status: 409 });
   }
 
+  const requestedType = body?.type === "arrivee" || body?.type === "depart" ? body.type : null;
+  if (requestedType && requestedType !== classification.type) {
+    const message =
+      classification.type === "arrivee"
+        ? "Vous devez d'abord pointer votre arrivée."
+        : "Vous avez déjà pointé votre arrivée aujourd'hui. Pointez votre départ.";
+    return NextResponse.json({ error: message }, { status: 409 });
+  }
+
   if (classification.type === "arrivee") {
     const arrivalFlags = checkArrivalFlags(nowMinutes);
     const flags = uniqFlags([...arrivalFlags, ...geoFlags]);

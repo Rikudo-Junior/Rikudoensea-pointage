@@ -15,23 +15,31 @@ import type { Flag } from "@/lib/timeRules";
 
 type Step = "idle" | "pointing" | "done";
 type TestGeolocChoice = "site" | "hors_site" | "refus";
+type PointType = "arrivee" | "depart";
 
 interface DoneResult {
-  type: "arrivee" | "depart";
+  type: PointType;
   heure: string;
   flags: Flag[];
   dureeMinutes?: number;
 }
 
-export function PointerAction() {
+interface PointerActionProps {
+  initialArrivee?: string | null;
+  initialDepart?: string | null;
+}
+
+export function PointerAction({ initialArrivee = null, initialDepart = null }: PointerActionProps) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("idle");
+  const [arrivee, setArrivee] = useState<string | null>(initialArrivee);
+  const [depart, setDepart] = useState<string | null>(initialDepart);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DoneResult | null>(null);
   const [testGeoloc, setTestGeoloc] = useState<TestGeolocChoice>("site");
   const [testNow, setTestNow] = useState("");
 
-  async function handlePointer() {
+  async function handlePointer(type: PointType) {
     setError(null);
     setStep("pointing");
 
@@ -58,6 +66,7 @@ export function PointerAction() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          type,
           ...geoloc,
           ...(CLIENT_TEST_MODE && testNow ? { testNowIso: new Date(testNow).toISOString() } : {}),
         }),
@@ -67,6 +76,11 @@ export function PointerAction() {
         setError(data.error ?? "Une erreur est survenue.");
         setStep("idle");
         return;
+      }
+      if (data.type === "arrivee") {
+        setArrivee(data.heure);
+      } else {
+        setDepart(data.heure);
       }
       setResult(data);
       setStep("done");
@@ -119,11 +133,17 @@ export function PointerAction() {
     );
   }
 
+  const bothDone = Boolean(arrivee && depart);
+
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Pointer</CardTitle>
-        <CardDescription>Enregistrez votre arrivée ou votre départ du jour.</CardDescription>
+        <CardDescription>
+          {bothDone
+            ? "Pointage du jour terminé — à demain !"
+            : "Pointez votre arrivée, puis votre départ en fin de journée. Une seule fois chacun par jour."}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {error && (
@@ -158,14 +178,25 @@ export function PointerAction() {
           </div>
         )}
 
-        <Button
-          size="lg"
-          className="h-14 w-full cursor-pointer text-lg font-semibold"
-          onClick={handlePointer}
-          disabled={step === "pointing"}
-        >
-          {step === "pointing" ? "Localisation en cours…" : "Pointer"}
-        </Button>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            size="lg"
+            className="h-14 cursor-pointer text-base font-semibold"
+            onClick={() => handlePointer("arrivee")}
+            disabled={step === "pointing" || Boolean(arrivee)}
+          >
+            {arrivee ? `Arrivée ✓ ${arrivee.slice(0, 5)}` : "Pointer arrivée"}
+          </Button>
+          <Button
+            size="lg"
+            variant={depart ? "outline" : "default"}
+            className="h-14 cursor-pointer text-base font-semibold"
+            onClick={() => handlePointer("depart")}
+            disabled={step === "pointing" || !arrivee || Boolean(depart)}
+          >
+            {depart ? `Départ ✓ ${depart.slice(0, 5)}` : "Pointer départ"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
