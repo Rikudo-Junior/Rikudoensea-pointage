@@ -1,9 +1,10 @@
 // Constantes de configuration métier — toutes surchargeables via variables d'environnement.
-// TODO: remplacer SCHOOL_LAT/SCHOOL_LON par les coordonnées GPS exactes du site ENSEA
-// (Abidjan, Côte d'Ivoire) avant mise en production — valeur ci-dessous approximative (Cocody).
+// Coordonnées GPS exactes du campus ENSEA (Avenue des Grandes Écoles, Cocody, Abidjan),
+// vérifiées via OpenStreetMap (nœud "École Nationale Supérieure de Statistique et
+// d'Economie Appliquée", à cette adresse).
 
-export const SCHOOL_LAT = Number(process.env.SCHOOL_LAT ?? "5.3599");
-export const SCHOOL_LON = Number(process.env.SCHOOL_LON ?? "-4.0083");
+export const SCHOOL_LAT = Number(process.env.SCHOOL_LAT ?? "5.3491152");
+export const SCHOOL_LON = Number(process.env.SCHOOL_LON ?? "-3.9890944");
 export const RADIUS_M = Number(process.env.RADIUS_M ?? 250);
 
 export const MORNING_WINDOW = { start: "06:00", end: "12:00" };
