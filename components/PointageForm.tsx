@@ -132,11 +132,6 @@ export function PointageForm() {
   return (
     <AuthShell>
       <div className="flex flex-col gap-6">
-        <div className="text-center lg:hidden">
-          <p className="text-xs font-semibold tracking-[0.2em] text-secondary uppercase">ENSEA</p>
-          <h1 className="mt-1 text-2xl font-bold text-foreground">Pointage des stagiaires</h1>
-        </div>
-
         <RoleTabs active="stagiaire" />
 
         {step === "loading" && (

@@ -16,7 +16,7 @@ export function HeroCarousel({ slides, intervalMs = 5000 }: { slides: EnseaSlide
 
   return (
     <div className="relative">
-      <div className="relative h-56 w-full overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
+      <div className="relative h-36 w-full overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 sm:h-44 lg:h-56">
         {slides.map((slide, i) => (
           <Image
             key={slide.image}

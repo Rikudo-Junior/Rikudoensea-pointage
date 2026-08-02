@@ -11,16 +11,22 @@ interface AuthShellProps {
   personName?: string;
 }
 
-/** Petite carte photo décorative, statique, dispersée dans le fond géométrique. */
+/** Petite carte photo décorative, statique — réservée au bureau (le mobile n'a pas la place). */
 function FloatingCard({ image, className }: { image: string; className: string }) {
   return (
-    <div className={`pointer-events-none absolute overflow-hidden rounded-xl shadow-xl ring-1 ring-white/10 ${className}`}>
+    <div
+      className={`pointer-events-none absolute hidden overflow-hidden rounded-xl shadow-xl ring-1 ring-white/10 lg:block ${className}`}
+    >
       <Image src={image} alt="" fill sizes="220px" className="object-cover" />
     </div>
   );
 }
 
-/** Layout deux colonnes pour les pages de connexion (stagiaire / directeur des études). */
+/**
+ * Layout pour les pages de connexion (stagiaire / directeur des études).
+ * Empilé (bannière compacte en haut, formulaire en dessous) sur mobile ;
+ * deux colonnes plein écran à partir de `lg`.
+ */
 export function AuthShell({
   children,
   title = "Pointage des stagiaires",
@@ -29,8 +35,8 @@ export function AuthShell({
   personName,
 }: AuthShellProps) {
   return (
-    <div className="flex min-h-svh w-full">
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-[#0B1220] p-12 text-white lg:flex">
+    <div className="flex min-h-svh w-full flex-col lg:flex-row">
+      <div className="relative flex w-full flex-col justify-between gap-8 overflow-hidden bg-[#0B1220] p-6 text-white sm:p-10 lg:w-1/2 lg:gap-0 lg:p-12">
         {/* Fond géométrique animé : dégradés radiaux, grille, formes floues qui dérivent. */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(30,64,175,0.4),transparent_50%),radial-gradient(circle_at_85%_0%,rgba(14,165,233,0.28),transparent_45%),radial-gradient(circle_at_50%_100%,rgba(56,189,248,0.18),transparent_55%)]" />
@@ -46,9 +52,10 @@ export function AuthShell({
           <div className="animate-drift-b absolute -bottom-28 -left-16 h-[26rem] w-[26rem] rounded-full bg-secondary/40 blur-3xl" />
         </div>
 
-        {/* Petites cartes flottantes : grille à colonnes/lignes fixes (46/64/82% de large,
-            paliers de 12-16% en hauteur) pour garantir qu'aucune ne se chevauche, en
-            laissant le coin haut-gauche (texte) et bas-gauche (carrousel) libres. */}
+        {/* Petites cartes flottantes (bureau uniquement) : grille à colonnes/lignes fixes
+            (46/64/82% de large, paliers de 12-16% en hauteur) pour garantir qu'aucune ne
+            se chevauche, en laissant le coin haut-gauche (texte) et bas-gauche (carrousel)
+            libres. */}
         <FloatingCard image="/hero-excellence.jpg" className="top-[6%] left-[46%] h-16 w-24 -rotate-2 opacity-60" />
         <FloatingCard image="/hero-salle-info.jpg" className="top-[6%] left-[64%] h-14 w-20 rotate-2 opacity-55" />
         <FloatingCard image="/hero-abers.jpg" className="top-[6%] left-[82%] h-16 w-24 rotate-2 opacity-70" />
@@ -71,15 +78,15 @@ export function AuthShell({
         <FloatingCard image="/hero-opendays.jpg" className="top-[78%] left-[64%] h-16 w-24 -rotate-2 opacity-70" />
 
         <div className="relative">
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white p-2 shadow-sm">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white p-2 shadow-sm lg:h-16 lg:w-16">
             <Image src="/logo.jpg" alt="ENSEA" width={220} height={120} className="h-full w-full object-contain" priority />
           </div>
-          <h2 className="mt-8 max-w-sm text-3xl font-bold leading-tight">{title}</h2>
-          <p className="mt-4 max-w-sm text-sm opacity-80">{description}</p>
+          <h2 className="mt-6 max-w-sm text-2xl leading-tight font-bold lg:mt-8 lg:text-3xl">{title}</h2>
+          <p className="mt-3 max-w-sm text-sm opacity-80 lg:mt-4">{description}</p>
 
           {personPhoto && (
-            <div className="mt-6 flex items-center gap-3">
-              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-white/20">
+            <div className="mt-5 flex items-center gap-3 lg:mt-6">
+              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ring-white/20 lg:h-12 lg:w-12">
                 <Image src={personPhoto} alt={personName ?? ""} width={96} height={96} className="h-full w-full object-cover" />
               </div>
               {personName && <p className="text-sm font-medium opacity-90">{personName}</p>}
@@ -92,7 +99,7 @@ export function AuthShell({
         </div>
       </div>
 
-      <div className="relative flex w-full flex-col items-center justify-center gap-6 overflow-hidden px-4 py-12 lg:w-1/2">
+      <div className="relative flex w-full flex-1 flex-col items-center justify-center gap-6 overflow-hidden px-4 py-10 lg:w-1/2 lg:py-12">
         <div className="animate-glow-pulse pointer-events-none absolute top-0 right-0 h-72 w-72 rounded-full bg-accent/20 blur-3xl" />
         <div className="animate-glow-pulse pointer-events-none absolute bottom-0 left-0 h-64 w-64 rounded-full bg-secondary/15 blur-3xl [animation-delay:3s]" />
         <div className="relative w-full max-w-md">{children}</div>
