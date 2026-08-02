@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -22,10 +21,8 @@ export function DashboardTable({
   pointages: PointageRecord[];
   nominalMinutes: number;
 }) {
-  const router = useRouter();
   const [search, setSearch] = useState("");
   const [flaggedOnly, setFlaggedOnly] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
 
   const sorted = useMemo(
     () =>
@@ -49,13 +46,6 @@ export function DashboardTable({
       );
     });
   }, [sorted, search, flaggedOnly]);
-
-  async function handleLogout() {
-    setLoggingOut(true);
-    await fetch("/api/dashboard-logout", { method: "POST" });
-    router.replace("/dashboard/login");
-    router.refresh();
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -85,9 +75,6 @@ export function DashboardTable({
               Exporter (CSV)
             </Button>
           </a>
-          <Button variant="ghost" className="cursor-pointer" onClick={handleLogout} disabled={loggingOut}>
-            Déconnexion
-          </Button>
         </div>
       </div>
 

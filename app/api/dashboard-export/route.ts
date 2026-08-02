@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DASHBOARD_COOKIE_NAME } from "@/lib/config";
 import { verifyDashboardToken } from "@/lib/session";
-import { getAllPointages } from "@/lib/sheets";
+import { getAllPointagesWithUsers } from "@/lib/pointages";
 import { FLAG_LABELS } from "@/lib/flagLabels";
 
 function csvEscape(value: string): string {
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 
-  const pointages = await getAllPointages();
+  const pointages = await getAllPointagesWithUsers();
   const header = [
     "Date",
     "Prenom",

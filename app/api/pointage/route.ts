@@ -14,7 +14,8 @@ import {
 } from "@/lib/timeRules";
 import { isWithinSchoolRadius } from "@/lib/geoloc";
 import { getRequestIp } from "@/lib/ip";
-import { appendPointage, getTodayPointage, updatePointageRow, type PointageRecord } from "@/lib/sheets";
+import { appendPointage, getTodayPointage, updatePointage, type PointageRecord } from "@/lib/pointages";
+import { syncPointageToSheets } from "@/lib/sheetsSync";
 
 function uniqFlags(flags: Flag[]): Flag[] {
   return Array.from(new Set(flags));
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
     : undefined;
   const geoFlags = geolocationFlags({ status: geolocStatus, withinRadius });
 
-  const today = await getTodayPointage(session.email, date);
+  const today = await getTodayPointage(session.userId, date);
   const classification = classifyScan(today?.record ?? null);
 
   if (classification.type === "rejet") {
@@ -71,7 +72,8 @@ export async function POST(req: NextRequest) {
       flags,
       dureeMinutes: null,
     };
-    await appendPointage(record);
+    await appendPointage(session.userId, record);
+    await syncPointageToSheets(record);
     return NextResponse.json({ ok: true, type: "arrivee", flags, heure: nowTime });
   }
 
@@ -90,6 +92,7 @@ export async function POST(req: NextRequest) {
     flags,
     dureeMinutes,
   };
-  await updatePointageRow(today!.rowNumber, updatedRecord);
+  await updatePointage(today!.id, updatedRecord);
+  await syncPointageToSheets(updatedRecord);
   return NextResponse.json({ ok: true, type: "depart", flags, heure: nowTime, dureeMinutes });
 }

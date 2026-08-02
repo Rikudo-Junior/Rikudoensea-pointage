@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DASHBOARD_COOKIE_NAME, DASHBOARD_MAX_AGE_SECONDS } from "@/lib/config";
 import { signDashboardToken } from "@/lib/session";
+import { verifyDirecteurPassword } from "@/lib/directeur";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const password = typeof body?.password === "string" ? body.password : "";
 
-  const expected = process.env.DASHBOARD_PASSWORD;
-  if (!expected || password !== expected) {
+  const valid = await verifyDirecteurPassword(password);
+  if (!valid) {
     return NextResponse.json({ error: "Mot de passe incorrect." }, { status: 401 });
   }
 

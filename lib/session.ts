@@ -18,6 +18,7 @@ function getSecretKey(): Uint8Array {
 // ---------- Session stagiaire (identité vérifiée) ----------
 
 export interface SessionPayload {
+  userId: string;
   email: string;
   prenom: string;
   nom: string;
@@ -35,13 +36,19 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
   try {
     const { payload } = await jwtVerify(token, getSecretKey());
     if (
+      typeof payload.userId !== "string" ||
       typeof payload.email !== "string" ||
       typeof payload.prenom !== "string" ||
       typeof payload.nom !== "string"
     ) {
       return null;
     }
-    return { email: payload.email, prenom: payload.prenom, nom: payload.nom };
+    return {
+      userId: payload.userId,
+      email: payload.email,
+      prenom: payload.prenom,
+      nom: payload.nom,
+    };
   } catch {
     return null;
   }
@@ -53,7 +60,9 @@ export interface PendingVerificationPayload {
   email: string;
   prenom: string;
   nom: string;
+  classe: string;
   codeHash: string;
+  passwordHash: string;
   attempts: number;
 }
 
@@ -76,7 +85,9 @@ export async function verifyPendingVerification(
       typeof payload.email !== "string" ||
       typeof payload.prenom !== "string" ||
       typeof payload.nom !== "string" ||
+      typeof payload.classe !== "string" ||
       typeof payload.codeHash !== "string" ||
+      typeof payload.passwordHash !== "string" ||
       typeof payload.attempts !== "number"
     ) {
       return null;
@@ -85,7 +96,9 @@ export async function verifyPendingVerification(
       email: payload.email,
       prenom: payload.prenom,
       nom: payload.nom,
+      classe: payload.classe,
       codeHash: payload.codeHash,
+      passwordHash: payload.passwordHash,
       attempts: payload.attempts,
     };
   } catch {

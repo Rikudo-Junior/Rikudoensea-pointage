@@ -11,8 +11,10 @@ import {
   signSessionToken,
   verifyPendingVerification,
 } from "@/lib/session";
-import { createUser, getUserByEmail } from "@/lib/sheets";
+import { createUser, getUserByEmail } from "@/lib/users";
+import { syncUserToSheets } from "@/lib/sheetsSync";
 import { schoolDateString } from "@/lib/schoolTime";
+import type { Classe } from "@/lib/classes";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -68,27 +70,35 @@ export async function POST(req: NextRequest) {
     return res;
   }
 
-  const existingUser = await getUserByEmail(pending.email);
-  if (!existingUser) {
-    await createUser({
+  let user = await getUserByEmail(pending.email);
+  if (!user) {
+    user = await createUser({
       email: pending.email,
       prenom: pending.prenom,
       nom: pending.nom,
+      passwordHash: pending.passwordHash,
+      classe: pending.classe as Classe,
+    });
+    await syncUserToSheets({
+      email: user.email,
+      prenom: user.prenom,
+      nom: user.nom,
       dateInscription: schoolDateString(new Date()),
       statut: "actif",
     });
   }
 
   const sessionToken = await signSessionToken({
-    email: pending.email,
-    prenom: existingUser?.prenom ?? pending.prenom,
-    nom: existingUser?.nom ?? pending.nom,
+    userId: user.id,
+    email: user.email,
+    prenom: user.prenom,
+    nom: user.nom,
   });
 
   const res = NextResponse.json({
     ok: true,
-    prenom: existingUser?.prenom ?? pending.prenom,
-    nom: existingUser?.nom ?? pending.nom,
+    prenom: user.prenom,
+    nom: user.nom,
   });
   res.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
     httpOnly: true,

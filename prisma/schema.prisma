@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  prenom       String
+  nom          String
+  passwordHash String
+  classe       String     @default("ISE") // "ISE" | "AS" — voir lib/classes.ts
+  statut       String     @default("actif")
+  createdAt    DateTime   @default(now())
+  pointages    Pointage[]
+}
+
+// Compte partagé du Directeur des études (singleton — toujours id = "directeur").
+// Remplace le mot de passe figé DASHBOARD_PASSWORD : migré paresseusement vers ici
+// au premier login réussi (voir lib/directeur.ts), pour permettre son changement.
+model DirecteurAccount {
+  id           String   @id @default("directeur")
+  passwordHash String
+  updatedAt    DateTime @updatedAt
+}
+
+model Pointage {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  date         String
+  heureArrivee String?
+  latArrivee   Float?
+  lonArrivee   Float?
+  heureDepart  String?
+  latDepart    Float?
+  lonDepart    Float?
+  ipArrivee    String?
+  ipDepart     String?
+  flags        String[]
+  dureeMinutes Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
+}

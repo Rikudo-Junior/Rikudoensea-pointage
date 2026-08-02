@@ -60,7 +60,7 @@ export function classifyScan(today: PointageDayRecord | null): ScanClassificatio
   return {
     type: "rejet",
     reason:
-      "Vous avez déjà pointé votre arrivée et votre départ aujourd'hui. Contactez le responsable des stages en cas d'erreur.",
+      "Vous avez déjà pointé votre arrivée et votre départ aujourd'hui. Contactez le directeur des études en cas d'erreur.",
   };
 }
 

@@ -1,13 +1,19 @@
-import sgMail from "@sendgrid/mail";
+import nodemailer, { type Transporter } from "nodemailer";
 
-let configured = false;
+let transporter: Transporter | null = null;
 
-function ensureConfigured(): void {
-  if (configured) return;
-  const apiKey = process.env.SENDGRID_API_KEY;
-  if (!apiKey) throw new Error("SENDGRID_API_KEY manquant.");
-  sgMail.setApiKey(apiKey);
-  configured = true;
+function getTransporter(): Transporter {
+  if (transporter) return transporter;
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) {
+    throw new Error("GMAIL_USER / GMAIL_APP_PASSWORD manquant(s).");
+  }
+  transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass },
+  });
+  return transporter;
 }
 
 export function generateVerificationCode(): string {
@@ -15,13 +21,12 @@ export function generateVerificationCode(): string {
 }
 
 export async function sendVerificationCode(toEmail: string, code: string): Promise<void> {
-  ensureConfigured();
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL;
-  if (!fromEmail) throw new Error("SENDGRID_FROM_EMAIL manquant.");
+  const user = process.env.GMAIL_USER;
+  if (!user) throw new Error("GMAIL_USER manquant.");
 
-  await sgMail.send({
+  await getTransporter().sendMail({
     to: toEmail,
-    from: fromEmail,
+    from: `"Pointage stages ENSEA" <${user}>`,
     subject: "Code de vérification — Pointage stages ENSEA",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">

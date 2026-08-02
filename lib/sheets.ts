@@ -1,5 +1,6 @@
 import { google, sheets_v4 } from "googleapis";
 import { GOOGLE_SHEET_ID } from "./config";
+import type { PointageRecord } from "./pointages";
 import type { Flag } from "./timeRules";
 
 const UTILISATEURS_SHEET = "Utilisateurs";
@@ -31,22 +32,7 @@ export interface UserRecord {
   statut: "actif" | "desactive";
 }
 
-export interface PointageRecord {
-  email: string;
-  prenom: string;
-  nom: string;
-  date: string; // YYYY-MM-DD
-  heureArrivee: string | null; // HH:MM:SS
-  latArrivee: number | null;
-  lonArrivee: number | null;
-  heureDepart: string | null;
-  latDepart: number | null;
-  lonDepart: number | null;
-  ipArrivee: string | null;
-  ipDepart: string | null;
-  flags: Flag[];
-  dureeMinutes: number | null;
-}
+export type { PointageRecord };
 
 interface CacheEntry<T> {
   value: T;

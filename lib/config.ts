@@ -13,6 +13,10 @@ export const MIN_DURATION_HOURS = 2.5;
 export const NOMINAL_START = "08:00";
 export const NOMINAL_END = "17:30";
 
+// Période de stage, identique pour tous les stagiaires de cette cohorte.
+export const STAGE_START_DATE = process.env.STAGE_START_DATE ?? "2026-08-03";
+export const STAGE_END_DATE = process.env.STAGE_END_DATE ?? "2026-08-28";
+
 // Domaine des stagiaires (élèves). Le domaine @ensea.ed.ci (personnel/encadrants) n'est
 // volontairement pas autorisé ici : seuls les stagiaires pointent via cette app.
 export const ALLOWED_EMAIL_DOMAIN = process.env.ALLOWED_EMAIL_DOMAIN ?? "ensea.edu.ci";
