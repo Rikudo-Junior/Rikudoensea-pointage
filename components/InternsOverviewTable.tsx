@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { InternStats } from "@/lib/internStats";
 import { CLASSES, type Classe } from "@/lib/classes";
@@ -24,8 +26,11 @@ function formatHeures(heures: number): string {
 }
 
 export function InternsOverviewTable({ interns }: { interns: InternOverviewRow[] }) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [classeFilter, setClasseFilter] = useState<Classe | "toutes">("toutes");
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -36,6 +41,29 @@ export function InternsOverviewTable({ interns }: { interns: InternOverviewRow[]
       return i.prenom.toLowerCase().includes(q) || i.nom.toLowerCase().includes(q) || i.email.toLowerCase().includes(q);
     });
   }, [interns, search, classeFilter]);
+
+  async function toggleStatut(email: string, current: "actif" | "desactive") {
+    setError(null);
+    setPendingEmail(email);
+    const next = current === "actif" ? "desactive" : "actif";
+    try {
+      const res = await fetch("/api/dashboard-toggle-statut", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, statut: next }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error ?? "Une erreur est survenue.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError("Impossible de contacter le serveur.");
+    } finally {
+      setPendingEmail(null);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -63,6 +91,8 @@ export function InternsOverviewTable({ interns }: { interns: InternOverviewRow[]
           ))}
         </div>
       </div>
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="overflow-x-auto rounded-md border border-border bg-card">
         <Table>
@@ -99,9 +129,21 @@ export function InternsOverviewTable({ interns }: { interns: InternOverviewRow[]
                 <TableCell className="whitespace-nowrap">{i.email}</TableCell>
                 <TableCell className="whitespace-nowrap">{i.dateInscription}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={i.statut === "desactive" ? "text-muted-foreground" : undefined}>
-                    {i.statut === "actif" ? "Actif" : "Désactivé"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className={i.statut === "desactive" ? "text-muted-foreground" : undefined}>
+                      {i.statut === "actif" ? "Actif" : "Désactivé"}
+                    </Badge>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="cursor-pointer"
+                      disabled={pendingEmail === i.email}
+                      onClick={() => toggleStatut(i.email, i.statut)}
+                    >
+                      {i.statut === "actif" ? "Désactiver" : "Réactiver"}
+                    </Button>
+                  </div>
                 </TableCell>
                 <TableCell>{i.stats.joursTravailles}</TableCell>
                 <TableCell className={i.stats.joursAbsence > 0 ? "text-destructive font-medium" : undefined}>

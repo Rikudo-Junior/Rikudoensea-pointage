@@ -48,6 +48,10 @@ export async function updatePassword(userId: string, passwordHash: string): Prom
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
 }
 
+export async function setUserStatut(email: string, statut: "actif" | "desactive"): Promise<void> {
+  await prisma.user.update({ where: { email: email.toLowerCase() }, data: { statut } });
+}
+
 export async function createUser(input: {
   email: string;
   prenom: string;
