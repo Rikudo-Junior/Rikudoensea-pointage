@@ -74,7 +74,7 @@ export default function DashboardLoginPage() {
                 </Alert>
               )}
             </CardContent>
-            <CardFooter className="pt-6">
+            <CardFooter className="pt-10">
               <Button type="submit" className="w-full cursor-pointer" disabled={busy}>
                 {busy ? "Connexion…" : "Se connecter"}
               </Button>

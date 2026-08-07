@@ -68,7 +68,7 @@ export function StageDatesSettings({ initialDebut, initialFin }: StageDatesSetti
         <CardDescription>Définit la période de l&apos;édition en cours (utilisée pour les jours ouvrés, absences, heures attendues).</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="grid gap-3">
+        <CardContent className="grid gap-5">
           <div className="grid gap-2">
             <Label htmlFor="stageDebut">Date de début</Label>
             <Input id="stageDebut" type="date" required value={debut} onChange={(e) => setDebut(e.target.value)} />
@@ -88,7 +88,7 @@ export function StageDatesSettings({ initialDebut, initialFin }: StageDatesSetti
             </Alert>
           )}
         </CardContent>
-        <CardFooter className="flex gap-2 pt-6">
+        <CardFooter className="flex gap-2 pt-10">
           <Button type="submit" className="cursor-pointer" disabled={busy}>
             {busy ? "Enregistrement…" : "Enregistrer"}
           </Button>

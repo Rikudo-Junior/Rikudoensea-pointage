@@ -236,7 +236,7 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmitRapport}>
-          <CardContent className="grid gap-4">
+          <CardContent className="grid gap-6">
             <div className="grid gap-2">
               <Label htmlFor="rapportTexte">Qu&apos;avez-vous fait aujourd&apos;hui ?</Label>
               <Textarea
@@ -276,7 +276,7 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
               </Alert>
             )}
           </CardContent>
-          <CardFooter className="flex flex-col gap-3 pt-6">
+          <CardFooter className="flex flex-col gap-3 pt-10">
             <Button type="submit" className="w-full cursor-pointer" disabled={rapportBusy}>
               {rapportBusy ? "Envoi en cours…" : "Valider et pointer mon départ"}
             </Button>
