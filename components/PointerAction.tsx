@@ -14,7 +14,21 @@ import { CLIENT_TEST_MODE } from "@/lib/publicConfig";
 import { captureGeolocation } from "@/lib/useGeolocation";
 import type { Flag } from "@/lib/timeRules";
 
-const MAX_RAPPORT_PDF_BYTES = 8 * 1024 * 1024; // 8 Mo — doit rester aligné avec lib/config.ts
+// Doit rester aligné avec MAX_RAPPORT_PDF_BYTES dans lib/config.ts (limite des fonctions serverless Vercel).
+const MAX_RAPPORT_PDF_BYTES = 4 * 1024 * 1024; // 4 Mo
+
+/** Les réponses d'erreur de la plateforme (413, 504…) ne sont pas du JSON : on ne suppose jamais que res.json() réussit. */
+async function parseResponse<T>(res: Response): Promise<{ data: T | null; message: string | null }> {
+  const text = await res.text();
+  try {
+    return { data: (text ? JSON.parse(text) : {}) as T, message: null };
+  } catch {
+    if (res.status === 413) {
+      return { data: null, message: "Le fichier est trop volumineux pour être envoyé." };
+    }
+    return { data: null, message: "Le serveur a répondu de façon inattendue. Réessayez." };
+  }
+}
 
 type Step = "idle" | "pointing" | "rapport" | "done";
 type TestGeolocChoice = "site" | "hors_site" | "refus";
@@ -76,9 +90,9 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
           ...(CLIENT_TEST_MODE && testNow ? { testNowIso: new Date(testNow).toISOString() } : {}),
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Une erreur est survenue.");
+      const { data, message } = await parseResponse<DoneResult & { error?: string }>(res);
+      if (message || !res.ok || !data) {
+        setError(message ?? data?.error ?? "Une erreur est survenue.");
         setStep("idle");
         return;
       }
@@ -122,9 +136,13 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
         const formData = new FormData();
         formData.append("file", rapportFile);
         const uploadRes = await fetch("/api/rapport-upload", { method: "POST", body: formData });
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) {
-          setError(uploadData.error ?? "Impossible d'envoyer le PDF.");
+        const { data: uploadData, message: uploadMessage } = await parseResponse<{
+          url: string;
+          filename: string;
+          error?: string;
+        }>(uploadRes);
+        if (uploadMessage || !uploadRes.ok || !uploadData) {
+          setError(uploadMessage ?? uploadData?.error ?? "Impossible d'envoyer le PDF.");
           return;
         }
         rapportPdfUrl = uploadData.url;
@@ -143,9 +161,9 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
           ...(CLIENT_TEST_MODE && testNow ? { testNowIso: new Date(testNow).toISOString() } : {}),
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Une erreur est survenue.");
+      const { data, message } = await parseResponse<DoneResult & { error?: string }>(res);
+      if (message || !res.ok || !data) {
+        setError(message ?? data?.error ?? "Une erreur est survenue.");
         return;
       }
       setDepart(data.heure);

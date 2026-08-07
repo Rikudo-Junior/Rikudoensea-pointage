@@ -39,4 +39,6 @@ export const GOOGLE_SHEET_ID = TEST_MODE
   : process.env.GOOGLE_SHEET_ID;
 
 // Rapport de fin de journée : justificatif PDF joint par le stagiaire au pointage de départ.
-export const MAX_RAPPORT_PDF_BYTES = 8 * 1024 * 1024; // 8 Mo
+// Plafonné sous la limite de taille de requête des fonctions serverless Vercel (~4,5 Mo) :
+// au-delà, la plateforme rejette la requête avant même d'atteindre ce handler.
+export const MAX_RAPPORT_PDF_BYTES = 4 * 1024 * 1024; // 4 Mo
