@@ -28,9 +28,11 @@ model User {
 // Remplace le mot de passe figé DASHBOARD_PASSWORD : migré paresseusement vers ici
 // au premier login réussi (voir lib/directeur.ts), pour permettre son changement.
 model DirecteurAccount {
-  id           String   @id @default("directeur")
-  passwordHash String
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default("directeur")
+  passwordHash   String
+  stageDateDebut String?
+  stageDateFin   String?
+  updatedAt      DateTime @updatedAt
 }
 
 model Pointage {

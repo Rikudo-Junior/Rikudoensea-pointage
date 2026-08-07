@@ -13,6 +13,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/config";
 import { verifySessionToken } from "@/lib/session";
 import { getPointagesForUser } from "@/lib/pointages";
 import { computeInternStats } from "@/lib/internStats";
+import { getStageDates } from "@/lib/directeur";
 import { now } from "@/lib/clock";
 import { schoolDateString } from "@/lib/schoolTime";
 import { CalendarCheck2, CalendarX2, Hourglass, AlarmClock, LogOut } from "lucide-react";
@@ -59,9 +60,9 @@ export default async function MonSuiviPage() {
     redirect("/pointage");
   }
 
-  const pointages = await getPointagesForUser(session.userId);
+  const [pointages, stageDates] = await Promise.all([getPointagesForUser(session.userId), getStageDates()]);
   const today = schoolDateString(now());
-  const stats = computeInternStats(pointages, today);
+  const stats = computeInternStats(pointages, today, stageDates);
   const todayRecord = pointages.find((p) => p.date === today) ?? null;
 
   return (

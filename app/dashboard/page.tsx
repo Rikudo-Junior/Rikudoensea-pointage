@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 import { DashboardTable } from "@/components/DashboardTable";
 import { InternsOverviewTable, type InternOverviewRow } from "@/components/InternsOverviewTable";
 import { DirecteurSettings } from "@/components/DirecteurSettings";
+import { StageDatesSettings } from "@/components/StageDatesSettings";
 import { DashboardLogoutButton } from "@/components/DashboardLogoutButton";
 import { SiteHeader } from "@/components/SiteHeader";
 import { EnseaInfoStrip } from "@/components/EnseaInfoStrip";
@@ -10,6 +11,7 @@ import { getAllPointagesWithUsers, type PointageRecord } from "@/lib/pointages";
 import { getAllUsers } from "@/lib/users";
 import { computeInternStats } from "@/lib/internStats";
 import { computeLeaderboard } from "@/lib/leaderboard";
+import { getStageDates } from "@/lib/directeur";
 import { now } from "@/lib/clock";
 import { schoolDateString } from "@/lib/schoolTime";
 import { NOMINAL_END, NOMINAL_START } from "@/lib/config";
@@ -79,7 +81,11 @@ function LeaderboardCard({
 }
 
 export default async function DashboardPage() {
-  const [pointages, users] = await Promise.all([getAllPointagesWithUsers(), getAllUsers()]);
+  const [pointages, users, stageDates] = await Promise.all([
+    getAllPointagesWithUsers(),
+    getAllUsers(),
+    getStageDates(),
+  ]);
   const nominalMinutes = timeToMinutes(NOMINAL_END) - timeToMinutes(NOMINAL_START);
   const today = schoolDateString(now());
 
@@ -97,7 +103,7 @@ export default async function DashboardPage() {
     classe: u.classe,
     statut: u.statut,
     dateInscription: schoolDateString(u.createdAt),
-    stats: computeInternStats(pointagesByEmail.get(u.email) ?? [], today),
+    stats: computeInternStats(pointagesByEmail.get(u.email) ?? [], today, stageDates),
   }));
 
   const enCours = pointages.filter((p) => p.heureArrivee && !p.heureDepart).length;
@@ -124,6 +130,7 @@ export default async function DashboardPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <StageDatesSettings initialDebut={stageDates.debut} initialFin={stageDates.fin} />
           <DirecteurSettings />
           <DashboardLogoutButton />
         </div>

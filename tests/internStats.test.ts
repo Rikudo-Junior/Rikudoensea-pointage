@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeInternStats, workingDays } from "../lib/internStats";
+import { computeInternStats, workingDays, type StageDates } from "../lib/internStats";
 import type { PointageRecord } from "../lib/pointages";
 import type { Flag } from "../lib/timeRules";
+
+const STAGE_DATES: StageDates = { debut: "2026-08-03", fin: "2026-08-28" };
 
 function makeRecord(overrides: Partial<PointageRecord> & { date: string }): PointageRecord {
   return {
@@ -59,7 +61,7 @@ describe("computeInternStats", () => {
       makeRecord({ date: "2026-08-03", heureArrivee: "08:00:00", heureDepart: "17:30:00", dureeMinutes: 570 }),
     ];
 
-    const stats = computeInternStats(pointages, "2026-08-04");
+    const stats = computeInternStats(pointages, "2026-08-04", STAGE_DATES);
 
     expect(stats.joursOuvresEcoules).toBe(2); // 2026-08-03 (lun) + 2026-08-04 (mar)
     expect(stats.joursTravailles).toBe(1);
@@ -80,14 +82,14 @@ describe("computeInternStats", () => {
       }),
     ];
 
-    const stats = computeInternStats(pointages, "2026-08-04");
+    const stats = computeInternStats(pointages, "2026-08-04", STAGE_DATES);
 
     expect(stats.retards).toBe(2);
     expect(stats.departsAnticipes).toBe(1);
   });
 
   it("returns zeroed stats when today is before the stage start", () => {
-    const stats = computeInternStats([], "2026-07-30");
+    const stats = computeInternStats([], "2026-07-30", STAGE_DATES);
     expect(stats.joursOuvresEcoules).toBe(0);
     expect(stats.joursTravailles).toBe(0);
     expect(stats.joursAbsence).toBe(0);
@@ -95,7 +97,7 @@ describe("computeInternStats", () => {
   });
 
   it("caps elapsed working days at the stage end date", () => {
-    const stats = computeInternStats([], "2099-01-01");
+    const stats = computeInternStats([], "2099-01-01", STAGE_DATES);
     expect(stats.joursOuvresEcoules).toBe(workingDays("2026-08-03", "2026-08-28").length);
   });
 });

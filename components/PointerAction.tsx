@@ -57,6 +57,7 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
   const [testNow, setTestNow] = useState("");
   const [rapportTexte, setRapportTexte] = useState("");
   const [rapportFile, setRapportFile] = useState<File | null>(null);
+  const [rapportFileInputKey, setRapportFileInputKey] = useState(0);
   const [rapportBusy, setRapportBusy] = useState(false);
 
   async function resolveGeoloc(): Promise<{ geolocStatus: "ok" | "denied_or_unavailable"; lat?: number; lon?: number }> {
@@ -116,6 +117,11 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
     }
     setError(null);
     setRapportFile(file);
+  }
+
+  function handleClearRapportFile() {
+    setRapportFile(null);
+    setRapportFileInputKey((k) => k + 1); // force le remontage du <input type="file"> pour vider sa sélection native
   }
 
   async function handleSubmitRapport(e: React.FormEvent) {
@@ -244,8 +250,25 @@ export function PointerAction({ initialArrivee = null, initialDepart = null }: P
             </div>
             <div className="grid gap-2">
               <Label htmlFor="rapportFile">Travaux réalisés (PDF, optionnel)</Label>
-              <Input id="rapportFile" type="file" accept="application/pdf" onChange={handleRapportFileChange} />
-              {rapportFile && <p className="text-xs text-muted-foreground">{rapportFile.name}</p>}
+              <Input
+                key={rapportFileInputKey}
+                id="rapportFile"
+                type="file"
+                accept="application/pdf"
+                onChange={handleRapportFileChange}
+              />
+              {rapportFile && (
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground">{rapportFile.name}</p>
+                  <button
+                    type="button"
+                    onClick={handleClearRapportFile}
+                    className="cursor-pointer text-xs text-destructive underline-offset-4 hover:underline"
+                  >
+                    Retirer
+                  </button>
+                </div>
+              )}
             </div>
             {error && (
               <Alert variant="destructive">

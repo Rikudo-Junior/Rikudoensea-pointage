@@ -1,5 +1,7 @@
 import { prisma } from "./db";
 import { hashPassword, verifyPassword } from "./password";
+import { STAGE_END_DATE, STAGE_START_DATE } from "./config";
+import type { StageDates } from "./internStats";
 
 // Compte partagé du Directeur des études — toujours une seule ligne (id fixe).
 const DIRECTEUR_ID = "directeur";
@@ -36,4 +38,29 @@ export async function changeDirecteurPassword(currentPassword: string, newPasswo
     update: { passwordHash },
   });
   return true;
+}
+
+/**
+ * Dates de la période de stage en cours. Si le directeur ne les a jamais définies
+ * (aucun compte, ou compte sans dates enregistrées), retombe sur les valeurs par défaut
+ * de lib/config.ts.
+ */
+export async function getStageDates(): Promise<StageDates> {
+  const account = await prisma.directeurAccount.findUnique({ where: { id: DIRECTEUR_ID } });
+  return {
+    debut: account?.stageDateDebut ?? STAGE_START_DATE,
+    fin: account?.stageDateFin ?? STAGE_END_DATE,
+  };
+}
+
+/**
+ * Le compte directeur existe toujours à ce stade : cette action n'est accessible qu'avec
+ * un cookie dashboard valide, lui-même émis uniquement après un login réussi via
+ * verifyDirecteurPassword, qui migre paresseusement le compte s'il n'existait pas encore.
+ */
+export async function setStageDates(debut: string, fin: string): Promise<void> {
+  await prisma.directeurAccount.update({
+    where: { id: DIRECTEUR_ID },
+    data: { stageDateDebut: debut, stageDateFin: fin },
+  });
 }

@@ -1,6 +1,11 @@
-import { NOMINAL_END, NOMINAL_START, STAGE_END_DATE, STAGE_START_DATE } from "./config";
+import { NOMINAL_END, NOMINAL_START } from "./config";
 import type { PointageRecord } from "./pointages";
 import { timeToMinutes } from "./timeRules";
+
+export interface StageDates {
+  debut: string; // YYYY-MM-DD
+  fin: string; // YYYY-MM-DD
+}
 
 function parseDate(dateStr: string): Date {
   return new Date(`${dateStr}T00:00:00Z`);
@@ -39,12 +44,12 @@ export interface InternStats {
 }
 
 /**
- * `today` (YYYY-MM-DD, heure école) est borné à STAGE_END_DATE : les jours futurs du
+ * `today` (YYYY-MM-DD, heure école) est borné à `stageDates.fin` : les jours futurs du
  * stage ne comptent ni en heures attendues ni en absence.
  */
-export function computeInternStats(pointages: PointageRecord[], today: string): InternStats {
-  const boundedToday = today < STAGE_END_DATE ? today : STAGE_END_DATE;
-  const elapsedDays = today < STAGE_START_DATE ? [] : workingDays(STAGE_START_DATE, boundedToday);
+export function computeInternStats(pointages: PointageRecord[], today: string, stageDates: StageDates): InternStats {
+  const boundedToday = today < stageDates.fin ? today : stageDates.fin;
+  const elapsedDays = today < stageDates.debut ? [] : workingDays(stageDates.debut, boundedToday);
 
   const byDate = new Map(pointages.map((p) => [p.date, p]));
   const nominalMinutesPerDay = timeToMinutes(NOMINAL_END) - timeToMinutes(NOMINAL_START);
