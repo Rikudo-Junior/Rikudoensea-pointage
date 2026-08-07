@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FlagList } from "@/components/StatusBadge";
+import { RapportCell } from "@/components/RapportCell";
 import type { PointageRecord } from "@/lib/sheets";
 
 function formatDuree(minutes: number | null): string {
@@ -88,12 +89,13 @@ export function DashboardTable({
               <TableHead>Départ</TableHead>
               <TableHead>Durée</TableHead>
               <TableHead>À vérifier</TableHead>
+              <TableHead>Rapport</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                   Aucun pointage.
                 </TableCell>
               </TableRow>
@@ -117,6 +119,9 @@ export function DashboardTable({
                 </TableCell>
                 <TableCell>
                   <FlagList flags={p.flags} />
+                </TableCell>
+                <TableCell>
+                  <RapportCell texte={p.rapportTexte} pdfUrl={p.rapportPdfUrl} pdfNom={p.rapportPdfNom} />
                 </TableCell>
               </TableRow>
             ))}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FlagList } from "@/components/StatusBadge";
+import { RapportCell } from "@/components/RapportCell";
 import { LogoutButton } from "@/components/MonSuiviClient";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PointerAction } from "@/components/PointerAction";
@@ -98,12 +99,13 @@ export default async function MonSuiviPage() {
               <TableHead>Départ</TableHead>
               <TableHead>Durée</TableHead>
               <TableHead>À vérifier</TableHead>
+              <TableHead>Rapport</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stats.historique.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                   Aucun pointage pour le moment.
                 </TableCell>
               </TableRow>
@@ -118,6 +120,9 @@ export default async function MonSuiviPage() {
                 <TableCell>{formatDuree(p.dureeMinutes)}</TableCell>
                 <TableCell>
                   <FlagList flags={p.flags} />
+                </TableCell>
+                <TableCell>
+                  <RapportCell texte={p.rapportTexte} pdfUrl={p.rapportPdfUrl} pdfNom={p.rapportPdfNom} />
                 </TableCell>
               </TableRow>
             ))}

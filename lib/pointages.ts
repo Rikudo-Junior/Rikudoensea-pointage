@@ -16,6 +16,10 @@ export interface PointageRecord {
   ipDepart: string | null;
   flags: Flag[];
   dureeMinutes: number | null;
+  rapportTexte: string | null;
+  rapportPdfUrl: string | null;
+  rapportPdfNom: string | null;
+  rapportSoumisAt: string | null; // ISO 8601
 }
 
 interface PointageWithUser {
@@ -30,6 +34,10 @@ interface PointageWithUser {
   ipDepart: string | null;
   flags: string[];
   dureeMinutes: number | null;
+  rapportTexte: string | null;
+  rapportPdfUrl: string | null;
+  rapportPdfNom: string | null;
+  rapportSoumisAt: Date | null;
   user: { email: string; prenom: string; nom: string };
 }
 
@@ -49,6 +57,10 @@ function toRecord(p: PointageWithUser): PointageRecord {
     ipDepart: p.ipDepart,
     flags: p.flags as Flag[],
     dureeMinutes: p.dureeMinutes,
+    rapportTexte: p.rapportTexte,
+    rapportPdfUrl: p.rapportPdfUrl,
+    rapportPdfNom: p.rapportPdfNom,
+    rapportSoumisAt: p.rapportSoumisAt ? p.rapportSoumisAt.toISOString() : null,
   };
 }
 
@@ -78,6 +90,10 @@ export async function appendPointage(userId: string, record: PointageRecord): Pr
       ipDepart: record.ipDepart,
       flags: record.flags,
       dureeMinutes: record.dureeMinutes,
+      rapportTexte: record.rapportTexte,
+      rapportPdfUrl: record.rapportPdfUrl,
+      rapportPdfNom: record.rapportPdfNom,
+      rapportSoumisAt: record.rapportSoumisAt ? new Date(record.rapportSoumisAt) : null,
     },
   });
 }
@@ -96,6 +112,10 @@ export async function updatePointage(id: string, record: PointageRecord): Promis
       ipDepart: record.ipDepart,
       flags: record.flags,
       dureeMinutes: record.dureeMinutes,
+      rapportTexte: record.rapportTexte,
+      rapportPdfUrl: record.rapportPdfUrl,
+      rapportPdfNom: record.rapportPdfNom,
+      rapportSoumisAt: record.rapportSoumisAt ? new Date(record.rapportSoumisAt) : null,
     },
   });
 }

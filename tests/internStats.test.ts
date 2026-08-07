@@ -18,6 +18,10 @@ function makeRecord(overrides: Partial<PointageRecord> & { date: string }): Poin
     ipDepart: null,
     flags: [] as Flag[],
     dureeMinutes: null,
+    rapportTexte: null,
+    rapportPdfUrl: null,
+    rapportPdfNom: null,
+    rapportSoumisAt: null,
     ...overrides,
   };
 }

@@ -37,3 +37,6 @@ export const VERIFICATION_MAX_ATTEMPTS = 5;
 export const GOOGLE_SHEET_ID = TEST_MODE
   ? process.env.GOOGLE_SHEET_ID_TEST ?? process.env.GOOGLE_SHEET_ID
   : process.env.GOOGLE_SHEET_ID;
+
+// Rapport de fin de journée : justificatif PDF joint par le stagiaire au pointage de départ.
+export const MAX_RAPPORT_PDF_BYTES = 8 * 1024 * 1024; // 8 Mo

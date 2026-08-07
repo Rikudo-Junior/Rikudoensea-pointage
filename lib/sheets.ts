@@ -180,6 +180,10 @@ function rowToRecord(row: string[]): PointageRecord {
     ipDepart: get(11) || null,
     flags: get(12) ? (get(12).split(",") as Flag[]) : [],
     dureeMinutes: get(13) ? Number(get(13)) : null,
+    rapportTexte: null,
+    rapportPdfUrl: null,
+    rapportPdfNom: null,
+    rapportSoumisAt: null,
   };
 }
 

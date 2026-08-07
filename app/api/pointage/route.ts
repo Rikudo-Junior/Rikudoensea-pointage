@@ -80,6 +80,10 @@ export async function POST(req: NextRequest) {
       ipDepart: null,
       flags,
       dureeMinutes: null,
+      rapportTexte: null,
+      rapportPdfUrl: null,
+      rapportPdfNom: null,
+      rapportSoumisAt: null,
     };
     await appendPointage(session.userId, record);
     await syncPointageToSheets(record);
@@ -87,6 +91,16 @@ export async function POST(req: NextRequest) {
   }
 
   // classification.type === "depart"
+  const rapportTexte = typeof body?.rapportTexte === "string" ? body.rapportTexte.trim() : "";
+  if (!rapportTexte) {
+    return NextResponse.json(
+      { error: "Merci de renseigner un résumé de votre journée avant de pointer votre départ." },
+      { status: 400 },
+    );
+  }
+  const rapportPdfUrl = typeof body?.rapportPdfUrl === "string" ? body.rapportPdfUrl : null;
+  const rapportPdfNom = typeof body?.rapportPdfNom === "string" ? body.rapportPdfNom : null;
+
   const departureFlags = checkDepartureFlags(nowMinutes, classification.arrivalMinutes);
   const existingFlags = today?.record.flags ?? [];
   const flags = uniqFlags([...existingFlags, ...departureFlags, ...geoFlags]);
@@ -100,6 +114,10 @@ export async function POST(req: NextRequest) {
     ipDepart: ip,
     flags,
     dureeMinutes,
+    rapportTexte,
+    rapportPdfUrl,
+    rapportPdfNom,
+    rapportSoumisAt: nowDate.toISOString(),
   };
   await updatePointage(today!.id, updatedRecord);
   await syncPointageToSheets(updatedRecord);

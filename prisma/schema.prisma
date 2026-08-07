@@ -34,22 +34,26 @@ model DirecteurAccount {
 }
 
 model Pointage {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
-  date         String
-  heureArrivee String?
-  latArrivee   Float?
-  lonArrivee   Float?
-  heureDepart  String?
-  latDepart    Float?
-  lonDepart    Float?
-  ipArrivee    String?
-  ipDepart     String?
-  flags        String[]
-  dureeMinutes Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  date            String
+  heureArrivee    String?
+  latArrivee      Float?
+  lonArrivee      Float?
+  heureDepart     String?
+  latDepart       Float?
+  lonDepart       Float?
+  ipArrivee       String?
+  ipDepart        String?
+  flags           String[]
+  dureeMinutes    Int?
+  rapportTexte    String?
+  rapportPdfUrl   String?
+  rapportPdfNom   String?
+  rapportSoumisAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@unique([userId, date])
   @@index([userId])
