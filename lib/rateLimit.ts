@@ -1,9 +1,9 @@
 import { prisma } from "./db";
 
-// Verrouillage temporaire après tentatives de connexion échouées, contre le brute-force
-// sur /api/login et /api/dashboard-login. Stocké en base (table LoginAttempt, gérée en
-// SQL brut — voir prisma/schema.prisma) plutôt qu'en mémoire : les fonctions serverless
-// ne partagent pas d'état entre invocations.
+// Verrouillage temporaire après N tentatives sur une même clé, contre le brute-force sur
+// /api/login et /api/dashboard-login, et contre le spam d'emails sur /api/register.
+// Stocké en base (table LoginAttempt, gérée en SQL brut — voir prisma/schema.prisma)
+// plutôt qu'en mémoire : les fonctions serverless ne partagent pas d'état entre invocations.
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 
@@ -23,7 +23,7 @@ export async function checkLockout(key: string): Promise<{ locked: boolean; retr
   return { locked: false, retryAfterSeconds: 0 };
 }
 
-export async function recordFailedAttempt(key: string): Promise<void> {
+export async function recordAttempt(key: string): Promise<void> {
   const rows = await prisma.$queryRaw<AttemptRow[]>`
     SELECT count, "lockedUntil" FROM "LoginAttempt" WHERE key = ${key}
   `;

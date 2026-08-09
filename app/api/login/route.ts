@@ -3,7 +3,7 @@ import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from "@/lib/config";
 import { verifyPassword } from "@/lib/password";
 import { signSessionToken } from "@/lib/session";
 import { getUserByEmail } from "@/lib/users";
-import { checkLockout, clearAttempts, recordFailedAttempt } from "@/lib/rateLimit";
+import { checkLockout, clearAttempts, recordAttempt } from "@/lib/rateLimit";
 
 const GENERIC_ERROR = "Email ou mot de passe incorrect.";
 const LOCKED_ERROR = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
@@ -28,13 +28,13 @@ export async function POST(req: NextRequest) {
 
   const user = await getUserByEmail(email);
   if (!user || user.statut === "desactive") {
-    await recordFailedAttempt(rateLimitKey);
+    await recordAttempt(rateLimitKey);
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 
   const passwordValid = await verifyPassword(password, user.passwordHash);
   if (!passwordValid) {
-    await recordFailedAttempt(rateLimitKey);
+    await recordAttempt(rateLimitKey);
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
   await clearAttempts(rateLimitKey);

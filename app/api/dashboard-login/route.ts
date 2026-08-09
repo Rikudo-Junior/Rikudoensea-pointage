@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { DASHBOARD_COOKIE_NAME, DASHBOARD_MAX_AGE_SECONDS } from "@/lib/config";
 import { signDashboardToken } from "@/lib/session";
 import { verifyDirecteurPassword } from "@/lib/directeur";
-import { checkLockout, clearAttempts, recordFailedAttempt } from "@/lib/rateLimit";
+import { checkLockout, clearAttempts, recordAttempt } from "@/lib/rateLimit";
 
 const RATE_LIMIT_KEY = "dashboard:directeur";
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   const valid = await verifyDirecteurPassword(password);
   if (!valid) {
-    await recordFailedAttempt(RATE_LIMIT_KEY);
+    await recordAttempt(RATE_LIMIT_KEY);
     return NextResponse.json({ error: "Mot de passe incorrect." }, { status: 401 });
   }
   await clearAttempts(RATE_LIMIT_KEY);

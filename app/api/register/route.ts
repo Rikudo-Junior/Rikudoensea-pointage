@@ -10,6 +10,7 @@ import { hashPassword } from "@/lib/password";
 import { signPendingVerification } from "@/lib/session";
 import { getUserByEmail } from "@/lib/users";
 import { isClasse } from "@/lib/classes";
+import { checkLockout, recordAttempt } from "@/lib/rateLimit";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -56,6 +57,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const rateLimitKey = `register:${email}`;
+  const lockout = await checkLockout(rateLimitKey);
+  if (lockout.locked) {
+    return NextResponse.json(
+      {
+        error: "Trop de demandes de code pour cette adresse. Réessayez dans quelques minutes.",
+        retryAfterSeconds: lockout.retryAfterSeconds,
+      },
+      { status: 429 },
+    );
+  }
+
   const code = generateVerificationCode();
   const codeHash = hashVerificationCode(code);
   const passwordHash = await hashPassword(password);
@@ -70,6 +83,7 @@ export async function POST(req: NextRequest) {
   });
 
   try {
+    await recordAttempt(rateLimitKey);
     await sendVerificationCode(email, code);
   } catch {
     return NextResponse.json(
