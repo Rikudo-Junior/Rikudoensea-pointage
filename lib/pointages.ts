@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import type { Flag } from "./timeRules";
+import type { Classe } from "./classes";
 
 export interface PointageRecord {
   email: string;
@@ -120,12 +121,16 @@ export async function updatePointage(id: string, record: PointageRecord): Promis
   });
 }
 
-export async function getAllPointagesWithUsers(): Promise<PointageRecord[]> {
+export interface PointageRecordWithClasse extends PointageRecord {
+  classe: Classe;
+}
+
+export async function getAllPointagesWithUsers(): Promise<PointageRecordWithClasse[]> {
   const rows = await prisma.pointage.findMany({
-    include: { user: { select: { email: true, prenom: true, nom: true } } },
+    include: { user: { select: { email: true, prenom: true, nom: true, classe: true } } },
     orderBy: { date: "desc" },
   });
-  return rows.map(toRecord);
+  return rows.map((row) => ({ ...toRecord(row), classe: row.user.classe as Classe }));
 }
 
 export async function getPointagesForUser(userId: string): Promise<PointageRecord[]> {

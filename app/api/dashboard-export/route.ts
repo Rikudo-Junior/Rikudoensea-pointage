@@ -3,6 +3,7 @@ import { DASHBOARD_COOKIE_NAME } from "@/lib/config";
 import { verifyDashboardToken } from "@/lib/session";
 import { getAllPointagesWithUsers } from "@/lib/pointages";
 import { FLAG_LABELS } from "@/lib/flagLabels";
+import { isClasse } from "@/lib/classes";
 
 function csvEscape(value: string): string {
   // Neutralise l'injection de formule (=, +, -, @ en tête sont interprétés comme des
@@ -22,12 +23,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 
-  const pointages = await getAllPointagesWithUsers();
+  const { searchParams } = req.nextUrl;
+  const dateDebut = searchParams.get("dateDebut");
+  const dateFin = searchParams.get("dateFin");
+  const classeParam = searchParams.get("classe");
+  const classe = isClasse(classeParam) ? classeParam : null;
+  const flaggedOnly = searchParams.get("flaggedOnly") === "true";
+
+  const allPointages = await getAllPointagesWithUsers();
+  const pointages = allPointages.filter((p) => {
+    if (dateDebut && p.date < dateDebut) return false;
+    if (dateFin && p.date > dateFin) return false;
+    if (classe && p.classe !== classe) return false;
+    if (flaggedOnly && p.flags.length === 0) return false;
+    return true;
+  });
+
   const header = [
     "Date",
     "Prenom",
     "Nom",
     "Email",
+    "Classe",
     "HeureArrivee",
     "HeureDepart",
     "DureeMinutes",
@@ -38,6 +55,7 @@ export async function GET(req: NextRequest) {
     p.prenom,
     p.nom,
     p.email,
+    p.classe,
     p.heureArrivee ?? "",
     p.heureDepart ?? "",
     p.dureeMinutes?.toString() ?? "",
