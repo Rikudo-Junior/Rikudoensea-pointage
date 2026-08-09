@@ -21,6 +21,22 @@ function uniqFlags(flags: Flag[]): Flag[] {
   return Array.from(new Set(flags));
 }
 
+// N'accepte que les URLs de blob issues de /api/rapport-upload pour CET utilisateur —
+// sinon un pointage pourrait pointer vers n'importe quelle URL arbitraire (javascript:,
+// site de phishing, etc.) rendue en lien cliquable dans le dashboard du directeur.
+function isOwnRapportBlobUrl(url: string, userId: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.hostname.endsWith(".public.blob.vercel-storage.com") &&
+      parsed.pathname.startsWith(`/rapports/${userId}/`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME)?.value;
   const session = sessionCookie ? await verifySessionToken(sessionCookie) : null;
@@ -98,8 +114,11 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const rapportPdfUrl = typeof body?.rapportPdfUrl === "string" ? body.rapportPdfUrl : null;
-  const rapportPdfNom = typeof body?.rapportPdfNom === "string" ? body.rapportPdfNom : null;
+  const rawRapportPdfUrl = typeof body?.rapportPdfUrl === "string" ? body.rapportPdfUrl : null;
+  const rapportPdfUrl = rawRapportPdfUrl && isOwnRapportBlobUrl(rawRapportPdfUrl, session.userId)
+    ? rawRapportPdfUrl
+    : null;
+  const rapportPdfNom = rapportPdfUrl && typeof body?.rapportPdfNom === "string" ? body.rapportPdfNom : null;
 
   const departureFlags = checkDepartureFlags(nowMinutes, classification.arrivalMinutes);
   const existingFlags = today?.record.flags ?? [];

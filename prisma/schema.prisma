@@ -35,6 +35,15 @@ model DirecteurAccount {
   updatedAt      DateTime @updatedAt
 }
 
+// Verrouillage temporaire après tentatives de connexion échouées (stagiaire ou
+// directeur) — clé libre ("login:<email>" ou "dashboard:directeur"), gérée en SQL brut
+// (lib/rateLimit.ts) plutôt que via le client Prisma généré.
+model LoginAttempt {
+  key         String    @id
+  count       Int       @default(0)
+  lockedUntil DateTime?
+}
+
 model Pointage {
   id              String    @id @default(cuid())
   userId          String

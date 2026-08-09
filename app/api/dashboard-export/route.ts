@@ -5,10 +5,14 @@ import { getAllPointagesWithUsers } from "@/lib/pointages";
 import { FLAG_LABELS } from "@/lib/flagLabels";
 
 function csvEscape(value: string): string {
-  if (/[",\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+  // Neutralise l'injection de formule (=, +, -, @ en tête sont interprétés comme des
+  // formules par Excel/Sheets à l'ouverture) sur les champs saisis par les stagiaires
+  // (prenom, nom, email) avant l'échappement CSV standard.
+  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  if (/[",\n]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
   }
-  return value;
+  return safe;
 }
 
 export async function GET(req: NextRequest) {
