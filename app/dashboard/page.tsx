@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { DashboardTable } from "@/components/DashboardTable";
 import { InternsOverviewTable, type InternOverviewRow } from "@/components/InternsOverviewTable";
@@ -12,6 +14,8 @@ import { getAllUsers } from "@/lib/users";
 import { computeInternStats } from "@/lib/internStats";
 import { computeLeaderboard } from "@/lib/leaderboard";
 import { getStageDates } from "@/lib/directeur";
+import { DASHBOARD_COOKIE_NAME } from "@/lib/config";
+import { verifyDashboardToken } from "@/lib/session";
 import { now } from "@/lib/clock";
 import { schoolDateString } from "@/lib/schoolTime";
 import { NOMINAL_END, NOMINAL_START } from "@/lib/config";
@@ -81,6 +85,13 @@ function LeaderboardCard({
 }
 
 export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const dashboardCookie = cookieStore.get(DASHBOARD_COOKIE_NAME)?.value;
+  const authorized = dashboardCookie ? await verifyDashboardToken(dashboardCookie) : false;
+  if (!authorized) {
+    redirect("/dashboard/login");
+  }
+
   const [pointages, users, stageDates] = await Promise.all([
     getAllPointagesWithUsers(),
     getAllUsers(),
