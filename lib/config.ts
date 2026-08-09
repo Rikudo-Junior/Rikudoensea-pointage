@@ -29,7 +29,7 @@ export const DASHBOARD_COOKIE_NAME = "ensea_dashboard";
 export const TEST_NOW_COOKIE_NAME = "ensea_test_now";
 export const PENDING_VERIFICATION_COOKIE_NAME = "ensea_pending";
 
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 90; // 90 jours
+export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24; // 1 jour
 export const DASHBOARD_MAX_AGE_SECONDS = 60 * 60 * 12; // 12 heures
 
 export const VERIFICATION_CODE_TTL_SECONDS = 60 * 10; // 10 minutes
