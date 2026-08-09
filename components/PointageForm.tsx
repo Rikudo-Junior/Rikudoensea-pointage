@@ -12,7 +12,7 @@ import { RoleTabs } from "@/components/RoleTabs";
 import { CLASSES, type Classe } from "@/lib/classes";
 import { UserPlus, LogIn } from "lucide-react";
 
-type Step = "loading" | "choice" | "register" | "verify" | "login";
+type Step = "loading" | "choice" | "register" | "verify" | "login" | "forgot" | "reset";
 
 export function PointageForm() {
   const router = useRouter();
@@ -25,6 +25,10 @@ export function PointageForm() {
   const [classe, setClasse] = useState<Classe | null>(null);
   const [loginPassword, setLoginPassword] = useState("");
   const [code, setCode] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -116,6 +120,66 @@ export function PointageForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Une erreur est survenue.");
+        return;
+      }
+      router.push("/mon-suivi");
+    } catch {
+      setError("Impossible de contacter le serveur. Réessayez.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Une erreur est survenue.");
+        return;
+      }
+      setInfo(data.message ?? null);
+      setResetCode("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setStep("reset");
+    } catch {
+      setError("Impossible de contacter le serveur. Réessayez.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (newPassword.length < 8) {
+      setError("Le nouveau mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const res = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: resetCode, newPassword }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -317,11 +381,126 @@ export function PointageForm() {
                   className="cursor-pointer text-sm text-muted-foreground underline-offset-4 hover:underline"
                   onClick={() => {
                     setError(null);
+                    setStep("forgot");
+                  }}
+                >
+                  Mot de passe oublié ?
+                </button>
+                <button
+                  type="button"
+                  className="cursor-pointer text-sm text-muted-foreground underline-offset-4 hover:underline"
+                  onClick={() => {
+                    setError(null);
                     setStep("register");
                   }}
                 >
                   Pas encore de compte ? S&apos;inscrire
                 </button>
+              </CardFooter>
+            </form>
+          </Card>
+        )}
+
+        {step === "forgot" && (
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Mot de passe oublié</CardTitle>
+              <CardDescription>Indiquez votre email institutionnel pour recevoir un code de réinitialisation.</CardDescription>
+            </CardHeader>
+            <form onSubmit={handleForgotPassword}>
+              <CardContent className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="forgotEmail">Email institutionnel</Label>
+                  <Input
+                    id="forgotEmail"
+                    type="email"
+                    required
+                    placeholder="prenom.nom@ensea.edu.ci"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertTitle>{error}</AlertTitle>
+                  </Alert>
+                )}
+              </CardContent>
+              <CardFooter className="flex flex-col gap-3 pt-6">
+                <Button type="submit" className="w-full cursor-pointer" disabled={busy}>
+                  {busy ? "Envoi en cours…" : "Recevoir un code"}
+                </Button>
+                <button
+                  type="button"
+                  className="cursor-pointer text-sm text-muted-foreground underline-offset-4 hover:underline"
+                  onClick={() => {
+                    setError(null);
+                    setStep("login");
+                  }}
+                >
+                  Retour à la connexion
+                </button>
+              </CardFooter>
+            </form>
+          </Card>
+        )}
+
+        {step === "reset" && (
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Réinitialiser le mot de passe</CardTitle>
+              <CardDescription>
+                {info ?? `Un code à 6 chiffres a été envoyé à ${email}, s'il existe un compte pour cette adresse.`}
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleResetPassword}>
+              <CardContent className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="resetCode">Code</Label>
+                  <Input
+                    id="resetCode"
+                    inputMode="numeric"
+                    maxLength={6}
+                    required
+                    className="text-center text-lg tracking-[0.5em]"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ""))}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmNewPassword">Confirmer le mot de passe</Label>
+                  <Input
+                    id="confirmNewPassword"
+                    type="password"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  />
+                </div>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertTitle>{error}</AlertTitle>
+                  </Alert>
+                )}
+              </CardContent>
+              <CardFooter className="pt-6">
+                <Button type="submit" className="w-full cursor-pointer" disabled={busy}>
+                  {busy ? "Validation…" : "Réinitialiser et me connecter"}
+                </Button>
               </CardFooter>
             </form>
           </Card>

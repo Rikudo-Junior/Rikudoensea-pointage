@@ -106,6 +106,45 @@ export async function verifyPendingVerification(
   }
 }
 
+// ---------- Réinitialisation de mot de passe en attente (code envoyé par email) ----------
+
+export interface PendingResetPayload {
+  email: string;
+  userId: string;
+  codeHash: string;
+  attempts: number;
+}
+
+export async function signPendingReset(payload: PendingResetPayload): Promise<string> {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(`${VERIFICATION_CODE_TTL_SECONDS}s`)
+    .sign(getSecretKey());
+}
+
+export async function verifyPendingReset(token: string): Promise<PendingResetPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecretKey());
+    if (
+      typeof payload.email !== "string" ||
+      typeof payload.userId !== "string" ||
+      typeof payload.codeHash !== "string" ||
+      typeof payload.attempts !== "number"
+    ) {
+      return null;
+    }
+    return {
+      email: payload.email,
+      userId: payload.userId,
+      codeHash: payload.codeHash,
+      attempts: payload.attempts,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ---------- Session responsable (dashboard) ----------
 
 export async function signDashboardToken(): Promise<string> {

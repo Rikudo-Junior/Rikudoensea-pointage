@@ -40,3 +40,24 @@ export async function sendVerificationCode(toEmail: string, code: string): Promi
     `,
   });
 }
+
+export async function sendPasswordResetCode(toEmail: string, code: string): Promise<void> {
+  const user = process.env.GMAIL_USER;
+  if (!user) throw new Error("GMAIL_USER manquant.");
+
+  await getTransporter().sendMail({
+    to: toEmail,
+    from: `"Pointage stages ENSEA" <${user}>`,
+    subject: "Réinitialisation du mot de passe — Pointage stages ENSEA",
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+        <p style="color:#0F172A;">Bonjour,</p>
+        <p style="color:#0F172A;">Voici votre code pour réinitialiser votre mot de passe du pointage des stagiaires ENSEA :</p>
+        <p style="font-size:32px;font-weight:700;letter-spacing:6px;color:#1E40AF;text-align:center;margin:24px 0;">
+          ${code}
+        </p>
+        <p style="color:#475569;font-size:14px;">Ce code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message — votre mot de passe reste inchangé.</p>
+      </div>
+    `,
+  });
+}
